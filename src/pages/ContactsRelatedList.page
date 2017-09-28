@@ -1,0 +1,5 @@
+<apex:page standardController="Account" extensions="ContactsRelatedList" showHeader="false">
+
+    <c:RelatedList parentId="{!Account.Id}" objectName="Case" maxHeight="150"
+        records="{!contacts}" fields="Subject" componentTitle="Contacts"/>
+</apex:page>

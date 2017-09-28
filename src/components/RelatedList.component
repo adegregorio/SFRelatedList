@@ -1,0 +1,96 @@
+<apex:component controller="RelatedListComponent" >
+
+<!-- ####### REQUIRED ATTRIBUTES ####### -->
+<apex:attribute name="parentId"
+    type="Id"
+    required="true"
+    assignTo="{!recordId}"
+    description="The id of the parent record." />
+<apex:attribute name="objectName"
+    type="String"
+    required="true"
+    assignTo="{!objectNameAttribute}"
+    description="The API name of the object to be listed." />
+<apex:attribute name="records"
+    type="sObject[]"
+    required="true"
+    description="The list of records." />
+<apex:attribute name="fields"
+    type="String"
+    required="true"
+    assignTo="{!fieldsAttribute}"
+    description="The list of fields as a comma-separated string." />
+<apex:attribute name="componentTitle"
+    type="String"
+    required="true"
+    description="Title for the block component." />
+
+<!-- ####### OPTIONAL ATTRIBUTES ####### -->
+<apex:attribute name="linkField"
+    type="String"
+    default="Name"
+    description="The name of the field to link to the record. Default value is Name." />
+<apex:attribute name="showActions"
+    type="Boolean"
+    default="true"
+    description="Define if Actions column is shown. Default value is true." />
+<apex:attribute name="showButtonNew"
+    type="Boolean"
+    default="true"
+    description="Define if the New button is shown. Default value is true." />
+<apex:attribute name="maxHeight"
+    type="Integer"
+    default="200"
+    description="Define max height for the list. Default value is 200." />
+
+<style>
+    .pbBody {
+        max-height: {!maxHeight - 53}px;
+        overflow: scroll;
+    }
+
+    form[id*='myForm'] div.pbBody {
+        margin: 6px !important;
+    }
+
+    .noRecordsText {
+        border: 1px solid #e0e3e5;
+        padding: 5px;
+        display: block;
+    }
+</style>
+
+    <apex:form id="myForm">
+        <div class="bRelatedList">
+            <apex:pageBlock title="{!componentTitle}" >
+                <apex:outputText styleClass="noRecordsText" value="No records to display" rendered="{!records.size=0}"/>
+
+                <apex:pageBlockButtons location="top">
+                    <apex:commandLink rendered="{!showButtonNew}" value="New" styleClass="btn" style="text-decoration:none;" target="_parent" action="{!newRecord}" />
+                </apex:pageBlockButtons>
+
+                <apex:pageBlockTable value="{!records}" var="record" rendered="{!records.size>0}">
+                    <apex:column headerValue="Action" styleClass="actionColumn"
+                            rendered="{!showActions && ($ObjectType[objectName].updateable || $ObjectType[objectName].deletable)}">
+                        <apex:commandLink action="{!URLFOR($Action[objectName].Edit, record.Id)}" rendered="{!$ObjectType[objectName].updateable}"
+                                value="Edit" styleClass="actionLink" target="_parent" />
+                        <apex:outputText value=" | " rendered="{!$ObjectType[objectName].updateable && $ObjectType[objectName].deletable}" />
+                        <apex:commandLink action="{!URLFOR($Action[objectName].Delete, record.Id)}"
+                                rendered="{!$ObjectType[objectName].deletable}"
+                                onclick="if (!confirm('Are you sure?')) {return false;}" value="Del" styleClass="actionLink" />
+                    </apex:column>
+
+                    <apex:repeat value="{!fieldsArray}" var="field">
+                        <apex:column headerValue="{!$ObjectType[objectName].fields[field].Label}" rendered="{!field = linkField}" >
+                            <apex:outputLink value="/{!record.Id}" target="_parent">
+                                {!record[field]}
+                            </apex:outputLink>
+                        </apex:column>
+                        <apex:column value="{!record[field]}" rendered="{!field != linkField}" />
+                    </apex:repeat>
+                </apex:pageBlockTable>
+
+            </apex:pageBlock>
+        </div>
+    </apex:form>
+</apex:component>
